@@ -84,40 +84,117 @@ yminAmortizado, espacamento, dict_cm, i, j, id_, dist):
         return min(distE), min(distO), min(distS)
 
 
+
 def simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, \
-ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus):
+ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia):
     serie_historica = []
     fim = 1
     neigh = neigh
     dist = dist
     d0 = copy.deepcopy(dict_cm)
     serie_historica.append(d0)
-    for key in dict_cm:
-        if dict_cm[key]['area_parque_cm']:
-            i = dict_cm[key]['i']
-            j = dict_cm[key]['j']
-            id_ = dict_cm[key]['id']
-            ocupacao_per, escola_per, onibus_per, saude_per = neighborhood(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-            yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus)
-            distEscola, distOnibus, distSaude = dista(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-            yminAmortizado, espacamento, dict_cm, i, j, id_, dist)
 
-            first_param = (ocupacao_per + escola_per + onibus_per + saude_per)/4
-            second_param = (distEscola + distOnibus + distSaude) / 3
+    space_to_occup = 0
+    occupied = 0
+    lag = 0
+    parq = 0
 
-            print(first_param, second_param)
+    for key in d0:
+        if (d0[key]['area_parque_cm'] == 1) and (d0[key]['area_lagoa_cm'] == 0):
+            space_to_occup += 1
+        if d0[key]['area_lagoa_cm']:
+            lag += 1
+        if d0[key]['area_parque_cm']:
+            parq += 1
 
-            if first_param + second_param > 0.6:
-                if dict_cm[key]['area_lagoa_cm'] == 0:
-                    dict_cm[key]['ocupado'] = 1
+    print('to: ', space_to_occup)
+
+    i = 0
+    while occupied < space_to_occup:
+    # for i in range(0, 1):
+        for key in dict_cm:
+            if (dict_cm[key]['area_parque_cm']):
+                i = dict_cm[key]['i']
+                j = dict_cm[key]['j']
+                id_ = dict_cm[key]['id']
+                ocupacao_per, escola_per, onibus_per, saude_per = neighborhood(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+                yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus)
+                distEscola, distOnibus, distSaude = dista(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+                yminAmortizado, espacamento, dict_cm, i, j, id_, dist)
+
+                N = ocupacao_per*pesos[0]
+                S = (escola_per*pesos[1] + onibus_per*pesos[2] + saude_per*pesos[3])/3
+                D = ((1 - distEscola) + (1 - distOnibus) + (1 - distSaude)) / 3
+                I = inercia
+                P = 1
+                E = 0.75
+
+                if dict_cm[key]['area_lagoa_cm']:
+                    P = 0
+
+                funct = ((N + S + D + I)/4)*P*E
+                # print(funct)
+
+                if funct > 0.15:
+                    if (dict_cm[key]['ocupado'] == 0):
+                        dict_cm[key]['ocupado'] = 1
+                        occupied += 1
+
+        d = copy.deepcopy(dict_cm)
+        serie_historica.append(d)
+        i+=1
 
 
-    return serie_historica, dict_cm
+    print('actual: ',occupied)
 
-
+    return serie_historica, dict_cm, i
 
 
 
 
 
 # End
+
+
+# def simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, \
+# ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus):
+#     serie_historica = []
+#     fim = 1
+#     neigh = neigh
+#     dist = dist
+#     d0 = copy.deepcopy(dict_cm)
+#     serie_historica.append(d0)
+#
+#     space_to_occup = 0
+#     ocupped = 0
+#
+#     for key in d0:
+#         if (d0[key]['area_parque_cm']) and (d0[key]['area_lagoa_cm'] == 0):
+#             space_to_occup += 1
+#
+#     while occuped < space_to_occup:
+#
+#         for key in dict_cm:
+#             if dict_cm[key]['area_parque_cm']:
+#                 i = dict_cm[key]['i']
+#                 j = dict_cm[key]['j']
+#                 id_ = dict_cm[key]['id']
+#                 ocupacao_per, escola_per, onibus_per, saude_per = neighborhood(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+#                 yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus)
+#                 distEscola, distOnibus, distSaude = dista(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+#                 yminAmortizado, espacamento, dict_cm, i, j, id_, dist)
+#
+#                 first_param = (ocupacao_per + escola_per + onibus_per + saude_per)/4
+#                 second_param = (distEscola + distOnibus + distSaude) / 3
+#
+#                 print(first_param, second_param)
+#
+#                 if first_param + second_param > 0.6:
+#                     if dict_cm[key]['area_lagoa_cm'] == 0:
+#                         dict_cm[key]['ocupado'] = 1
+#                         ocupped = space_to_occup
+#
+#     serie_historica.append(dict_cm)
+#
+#
+#     return serie_historica, dict_cm

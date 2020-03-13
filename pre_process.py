@@ -23,13 +23,13 @@ def load_shp():
     saude = fiona.open("chico_mendes/saude_estudo.shp")
     onibus = fiona.open("chico_mendes/onibus_estudo.shp")
     lagoa = fiona.open("chico_mendes/lagoa_metros.shp")
-    chico_mendes = fiona.open("Mapas_sim/shapes_sim_meters/area_chico_mendes.shp")
+    chico_mendes = fiona.open("chico_mendes/area_chico_mendes.shp")
 
     return escolas, saude, onibus, lagoa, chico_mendes
 
 def create_area(nextX, nextY, yminAmortizado, ymaxAmortizado,\
 xmaxAmortizado, xminAmortizado, escolas, saude, onibus, lagoa, chico_mendes, \
-espacamento):
+espacamento, xmax, xmin, ymax, ymin):
     listaL = lagoa[0]['geometry']['coordinates']
     listaCoordenadas = chico_mendes[0]['geometry']['coordinates']
     startX = xminAmortizado
@@ -48,6 +48,24 @@ espacamento):
     chicoString = 'area_parque_cm'
     lagoaString = 'area_lagoa_cm'
     ocupaString = 'ocupado'
+
+    listaL = lagoa[0]['geometry']['coordinates']
+
+    xminL = 999999999999999
+    xmaxL = -99999999999999
+    ymaxL = -99999999999999
+    yminL = 999999999999999
+    for elem in listaL[0]:
+
+        if elem[0] > xmaxL:
+            xmaxL = elem[0]
+        elif elem[0] < xminL:
+            xminL = elem[0]
+
+        if elem[1] > ymaxL:
+            ymaxL = elem[1]
+        elif elem[1] < yminL:
+            yminL = elem[1]
 
     dict_cm = {}
 
@@ -68,6 +86,18 @@ espacamento):
             area_estudo = AABB([(startX, nowX), (nowY, startY)])
             tree.add(area_estudo, 'envol')
 
+            #PARQUE
+            t = AABB([(xmin, xmax), (ymin, ymax)])
+            if(tree.does_overlap(t)):
+                cm = 1
+                ocupa = 0
+
+            #LAGOA
+            t = AABB([(xminL, xmaxL), (yminL, ymaxL)])
+            if(tree.does_overlap(t)):
+                l_cm = 1
+                ocupa = 0
+
 
             for linha in onibus:
                 for ponto in linha['geometry']['coordinates']:
@@ -75,7 +105,7 @@ espacamento):
                     t = AABB([(x, x), (y, y)])
                     if(tree.does_overlap(t)):
                         listaOnibus.append(linha)
-    #                     ocupa = 1
+                        ocupa = 1
                         break
 
             for unidade in saude:
@@ -84,7 +114,7 @@ espacamento):
                 t = AABB([(x, x), (y, y)])
 
                 if(tree.does_overlap(t)):
-    #                 ocupa = 1
+                    ocupa = 1
                     listaSaude.append(unidade)
 
 
@@ -95,24 +125,7 @@ espacamento):
 
                 if(tree.does_overlap(t)):
                     listaEscolas.append(escola)
-    #                 ocupa = 1
-
-            for coord in listaCoordenadas[0]:
-                x, y = coord
-
-                t = AABB([(x, x), (y, y)])
-
-                if(tree.does_overlap(t)):
-                    cm = 1
-                    ocupa = 0
-
-            for coordL in listaL[0]:
-                x,y = coordL
-                t = AABB([(x, x), (y, y)])
-
-                if(tree.does_overlap(t)):
-                    l_cm = 1
-                    ocupa = 0
+                    ocupa = 1
 
 
             dict_cm[id_] = {idString : id_, 'i': i, 'j': j, xString : startX, yString : startY, escolaString : listaEscolas, \

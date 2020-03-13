@@ -42,7 +42,7 @@ def write_onibus(listaOnibus, onibus):
             sink.write(e)
 
 
-def write_ocupacao_por_tempo(dict_cm, name, nextX, nextY):
+def write_ocupacao_por_tempo(serie, name, nextX, nextY):
     # Here's an example Shapely geometry
     # poly = Polygon(coordendas)
 
@@ -51,26 +51,61 @@ def write_ocupacao_por_tempo(dict_cm, name, nextX, nextY):
         'geometry': 'Polygon',
         'properties': {'id': 'int'},
     }
-    name = name + '.shp'
-    sink_list = []
-    for key in dict_cm:
-        if dict_cm[key]['area_parque_cm']:
-            if dict_cm[key]['ocupado']:
-                sink_list.append(dict_cm[key])
-                # Write a new Shapefile
-    with fiona.open(name, 'w', crs=from_epsg(3857), driver='ESRI Shapefile', schema=schema) as c:
+    i = 0
 
-        for s in sink_list:
-            x = s['local_x']
-            y = s['local_y']
+    for i in range(0, len(serie)):
+        name_ = name + '_' + str(i) + '.shp'
+        sink_list = []
+        for key in serie[i]:
+            if serie[i][key]['area_parque_cm']:
+                if serie[i][key]['ocupado']:
+                    sink_list.append(serie[i][key])
+                    # Write a new Shapefile
 
-            p = [ (x, y), (x+nextX, y), (x+nextX, y + nextY), (x, y+nextY)]
-            poly = Polygon(p)
-            c.write({
-                'geometry': mapping(poly),
-                'properties': {'id': s['id']},
-            })
+        outpath = name_
+        with fiona.open(outpath, 'w', crs=from_epsg(3857), driver='ESRI Shapefile', schema=schema) as c:
 
+            for s in sink_list:
+                x = s['local_x']
+                y = s['local_y']
+
+                p = [ (x, y), (x+nextX, y), (x+nextX, y + nextY), (x, y+nextY)]
+                poly = Polygon(p)
+                c.write({
+                    'geometry': mapping(poly),
+                    'properties': {'id': s['id']},
+                })
 
 
 # More comming
+
+# def write_ocupacao_por_tempo(serie, name, nextX, nextY):
+#     # Here's an example Shapely geometry
+#     # poly = Polygon(coordendas)
+#
+#     # Define a polygon feature geometry with one attribute
+#     schema = {
+#         'geometry': 'Polygon',
+#         'properties': {'id': 'int'},
+#     }
+#     i = 0
+#     for i in range(0, len(serie)):
+#         name = name + '_' + str(i) + '.shp'
+#         sink_list = []
+#         for key in serie[i]:
+#             if serie[i][key]['area_parque_cm']:
+#                 if serie[i][key]['ocupado']:
+#                     sink_list.append(serie[i][key])
+#                     # Write a new Shapefile
+#         with fiona.open(name, 'w', crs=from_epsg(3857), driver='ESRI Shapefile', schema=schema) as c:
+#
+#             for s in sink_list:
+#                 x = s['local_x']
+#                 y = s['local_y']
+#
+#                 p = [ (x, y), (x+nextX, y), (x+nextX, y + nextY), (x, y+nextY)]
+#                 poly = Polygon(p)
+#                 c.write({
+#                     'geometry': mapping(poly),
+#                     'properties': {'id': s['id']},
+#                 })

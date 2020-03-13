@@ -4,7 +4,7 @@ from aabbtree import AABB, AABBTree
 
 
 def extrair_chico_mendes():
-    chico_mendes = fiona.open("Mapas_sim/shapes_sim_meters/area_chico_mendes.shp")
+    chico_mendes = fiona.open("chico_mendes/area_chico_mendes.shp")
     # print (chico_mendes.schema)
     listaCoordenadas = chico_mendes[0]['geometry']['coordinates']
     # retirar ponto x máximo e ponto x mínimo, referente a projeção 3857

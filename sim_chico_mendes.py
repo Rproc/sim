@@ -43,7 +43,7 @@ escolas, saude, onibus, lagoa, chico_mendes = pp.load_shp()
 
 dict_cm = pp.create_area(nextX, nextY, yminAmortizado, ymaxAmortizado,\
 xmaxAmortizado, xminAmortizado, escolas, saude, onibus, lagoa, chico_mendes, \
-espacamento)
+espacamento, xmax, xmin, ymax, ymin)
 
 pp.write_dict(dict_cm, 'teste')
 # print(dict_cm[0])
@@ -51,10 +51,15 @@ pp.write_dict(dict_cm, 'teste')
 neigh = 'moore'
 dist = 'manhattan'
 
-serie, dict_cm = sim.simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-yminAmortizado, espacamento, escolas, saude, onibus)
+# vizinhança, escola, pontos de onibus, saude
+pesos = [0.8, 0.5, 0.8, 0.3]
+inercia = 0.25
 
 
+serie, dict_cm, tempo = sim.simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia )
+
+print(tempo)
 # sink_list = []
 # for key in dict_cm:
 #     if dict_cm[key]['area_parque_cm']:
@@ -65,7 +70,7 @@ yminAmortizado, espacamento, escolas, saude, onibus)
 
 
 
-write_shp.write_ocupacao_por_tempo(dict_cm, 'oc_test_py', nextX, nextY)
+write_shp.write_ocupacao_por_tempo(dict_cm, '8_5_8_3', nextX, nextY)
 
 
 
