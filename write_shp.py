@@ -77,6 +77,37 @@ def write_ocupacao_por_tempo(serie, name, nextX, nextY):
                 })
 
 
+def debug_(serie, name, nextX, nextY):
+
+    schema = {
+        'geometry': 'Polygon',
+        'properties': {'id': 'int'},
+    }
+    i = 0
+    # path = 'mnt/hdd/Personal/Documentos/MSc/sim/ouput/'
+    # path = 'home/none/Downloads/nath/'
+    # for i in range(0, len(serie)):
+    name_ = name + '_' + str(i) + '.shp'
+    sink_list = []
+    for key in serie:
+        if serie[key]['ocupado']:
+            sink_list.append(serie[key])
+
+    outpath = name_
+    with fiona.open(outpath, 'w', crs=from_epsg(3857), driver='ESRI Shapefile', schema=schema) as c:
+
+        for s in sink_list:
+            x = s['local_x']
+            y = s['local_y']
+
+            p = [ (x, y), (x+nextX, y), (x+nextX, y + nextY), (x, y+nextY)]
+            poly = Polygon(p)
+            c.write({
+                'geometry': mapping(poly),
+                'properties': {'id': s['id']},
+            })
+
+
 # More comming
 
 # def write_ocupacao_por_tempo(serie, name, nextX, nextY):

@@ -18,6 +18,7 @@ def pre_process(tree):
 
     # return()
 
+
 def load_shp():
     escolas = fiona.open("chico_mendes/escola_estudo.shp")
     saude = fiona.open("chico_mendes/saude_estudo.shp")
@@ -26,6 +27,7 @@ def load_shp():
     chico_mendes = fiona.open("chico_mendes/area_chico_mendes.shp")
 
     return escolas, saude, onibus, lagoa, chico_mendes
+
 
 def create_area(nextX, nextY, yminAmortizado, ymaxAmortizado,\
 xmaxAmortizado, xminAmortizado, escolas, saude, onibus, lagoa, chico_mendes, \
@@ -86,18 +88,17 @@ espacamento, xmax, xmin, ymax, ymin):
             area_estudo = AABB([(startX, nowX), (nowY, startY)])
             tree.add(area_estudo, 'envol')
 
-            #PARQUE
-            t = AABB([(xmin, xmax), (ymin, ymax)])
-            if(tree.does_overlap(t)):
-                cm = 1
-                ocupa = 0
-
             #LAGOA
             t = AABB([(xminL, xmaxL), (yminL, ymaxL)])
             if(tree.does_overlap(t)):
                 l_cm = 1
                 ocupa = 0
 
+            #PARQUE
+            t = AABB([(xmin, xmax), (ymin, ymax)])
+            if(tree.does_overlap(t)):
+                cm = 1
+                ocupa = 0
 
             for linha in onibus:
                 for ponto in linha['geometry']['coordinates']:
@@ -143,6 +144,7 @@ espacamento, xmax, xmin, ymax, ymin):
 
     return dict_cm
 
+
 def write_dict(dict_cm, name):
     name = name + '.csv'
     w = csv.writer(open(name, "w"))
@@ -150,7 +152,13 @@ def write_dict(dict_cm, name):
         w.writerow([key, val])
 
 
+def logging(log, name):
+    name = name + '.txt'
 
+    with open(name, 'w') as f:
+        for elem in log:
+            for item in elem:
+                f.write(str(item))
 
 
 # End

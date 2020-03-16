@@ -50,14 +50,13 @@ pp.write_dict(dict_cm, 'teste')
 
 neigh = 'moore'
 dist = 'manhattan'
+# vizinhança, escola, pontos de onibus, saude, distancia
+pesos = [0.4, 0.3, 0.2, 0.1, 0.9]
+threshold = 0.10
+inercia = 0.65
 
-# vizinhança, escola, pontos de onibus, saude
-pesos = [0.8, 0.5, 0.8, 0.3]
-inercia = 0.25
-
-
-serie, dict_cm, tempo = sim.simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia )
+serie, dict_cm, tempo, log = sim.simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia, threshold )
 
 print(tempo)
 # sink_list = []
@@ -70,8 +69,9 @@ print(tempo)
 
 
 
-write_shp.write_ocupacao_por_tempo(dict_cm, '8_5_8_3', nextX, nextY)
+write_shp.write_ocupacao_por_tempo(serie, 'ocupacao_cm', nextX, nextY)
 
+pp.logging(log, 'log')
 
 
 

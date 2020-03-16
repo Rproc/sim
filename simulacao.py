@@ -1,13 +1,15 @@
 import math
 from scipy.spatial import distance
 import copy
+import random
 
 def neighborhood(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
 yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus):
 
-    row = math.ceil( (xmaxAmortizado - xminAmortizado)/espacamento )
-    col = math.ceil( (ymaxAmortizado - yminAmortizado)/espacamento )
+    col = math.ceil( (xmaxAmortizado - xminAmortizado)/espacamento )
+    row = math.ceil( (ymaxAmortizado - yminAmortizado)/espacamento )
     cell = []
+
     if neigh == 'moore':
 
         ocupado = 0
@@ -24,7 +26,8 @@ yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus):
         cell.append((i-1)*row + (j-1)) # viz diagonal superior esquerdo
 
         for c in cell:
-            ocupado += dict_cm[c]['ocupado']
+            if dict_cm[c]['ocupado']:
+                ocupado += dict_cm[c]['ocupado']
             num_escolas += len(dict_cm[c]['escola'])
             linhasOnibus += len(dict_cm[c]['linha_onibus'])
             postoSaude += len(dict_cm[c]['unidade_saude'])
@@ -39,8 +42,8 @@ yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus):
 def dista(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
 yminAmortizado, espacamento, dict_cm, i, j, id_, dist):
 
-    row = math.ceil( (xmaxAmortizado - xminAmortizado)/espacamento )
-    col = math.ceil( (ymaxAmortizado - yminAmortizado)/espacamento )
+    col = math.ceil( (xmaxAmortizado - xminAmortizado)/espacamento )
+    row = math.ceil( (ymaxAmortizado - yminAmortizado)/espacamento )
 
     listaEsc = []
     listaOni = []
@@ -84,14 +87,13 @@ yminAmortizado, espacamento, dict_cm, i, j, id_, dist):
         return min(distE), min(distO), min(distS)
 
 
-
-def simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, \
-ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia):
+def simulacao(neigh, dist, dict_temp, xmaxAmortizado, xminAmortizado, \
+ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia, threshold):
     serie_historica = []
     fim = 1
     neigh = neigh
     dist = dist
-    d0 = copy.deepcopy(dict_cm)
+    d0 = copy.deepcopy(dict_temp)
     serie_historica.append(d0)
 
     space_to_occup = 0
@@ -109,47 +111,49 @@ ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, iner
 
     print('to: ', space_to_occup)
 
-    i = 0
-    while occupied < space_to_occup:
-    # for i in range(0, 1):
-        for key in dict_cm:
-            if (dict_cm[key]['area_parque_cm']):
-                i = dict_cm[key]['i']
-                j = dict_cm[key]['j']
-                id_ = dict_cm[key]['id']
+    log = []
+    t = 0
+    while ((occupied < (space_to_occup-2)) and (t < 100)):
+        for key in dict_temp:
+            if (dict_temp[key]['area_parque_cm']):
+                i = dict_temp[key]['i']
+                j = dict_temp[key]['j']
+                id_ = dict_temp[key]['id']
                 ocupacao_per, escola_per, onibus_per, saude_per = neighborhood(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-                yminAmortizado, espacamento, dict_cm, i, j, id_, neigh, escolas, saude, onibus)
+                yminAmortizado, espacamento, dict_temp, i, j, id_, neigh, escolas, saude, onibus)
                 distEscola, distOnibus, distSaude = dista(xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-                yminAmortizado, espacamento, dict_cm, i, j, id_, dist)
+                yminAmortizado, espacamento, dict_temp, i, j, id_, dist)
 
                 N = ocupacao_per*pesos[0]
                 S = (escola_per*pesos[1] + onibus_per*pesos[2] + saude_per*pesos[3])/3
-                D = ((1 - distEscola) + (1 - distOnibus) + (1 - distSaude)) / 3
+                D = (((1 - distEscola) + (1 - distOnibus) + (1 - distSaude)) / 3)*pesos[4]
                 I = inercia
                 P = 1
-                E = 0.75
+                E = 1
 
-                if dict_cm[key]['area_lagoa_cm']:
+                if dict_temp[key]['area_lagoa_cm']:
                     P = 0
 
-                funct = ((N + S + D + I)/4)*P*E
-                # print(funct)
+                funct = ((N + S + D - I))*P*E
+                if funct < 0.0:
+                    funct = 0.0
 
-                if funct > 0.15:
-                    if (dict_cm[key]['ocupado'] == 0):
-                        dict_cm[key]['ocupado'] = 1
+                f = random.random()
+                if funct > f:
+                    if dict_temp[key]['ocupado'] == 0:
+                        dict_temp[key]['ocupado'] = 1
                         occupied += 1
 
-        d = copy.deepcopy(dict_cm)
-        serie_historica.append(d)
-        i+=1
+        serie_historica.append(copy.deepcopy(dict_temp))
+        log.append(['iteracao: ', t, ', ' 'space occ: ', occupied, '\n'])
+
+        t+=1
+        print('iteracao: ', t, 'space occ: ', occupied)
 
 
-    print('actual: ',occupied)
+    print('final: ',occupied)
 
-    return serie_historica, dict_cm, i
-
-
+    return serie_historica, dict_temp, t, log
 
 
 
