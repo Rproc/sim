@@ -5,6 +5,7 @@ import fiona
 from fiona.crs import from_epsg
 import math
 import csv
+import string
 
 def pre_process(tree):
 
@@ -162,3 +163,34 @@ def logging(log, name):
 
 
 # End
+
+def load_param(name):
+    name = name + '.txt'
+
+    with open(name, 'r') as f:
+        espacamento = int(f.readline())
+        n = int(f.readline())
+        neigh = f.readline().rstrip('\n')
+        dist = f.readline().rstrip('\n')
+        f5 = f.readline()
+        weights = f5.split(',')
+        pesos = []
+        for i in range(0, (len(weights)-1)):
+            pesos.append(float(weights[i]))
+        inercia = float(f.readline())
+        nome_serie = f.readline().rstrip('\n')
+        log = f.readline().rstrip('\n')
+        log_discrete = f.readline().rstrip('\n')
+
+    return espacamento, n, neigh, dist, pesos, inercia, nome_serie, log, log_discrete
+
+
+def log_processing(log):
+    lista = []
+    for l in log:
+        lista.append(l[3])
+
+
+    return lista
+
+# as a s

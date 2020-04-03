@@ -13,9 +13,12 @@ import pre_process as pp
 import extrair_regioes as exReg
 import simulacao as sim
 import write_shp
+import plots
+
 # Parametros
-espacamento = 50
-n = 20 # multiplicador da area de amortização
+name = 'parameters'
+espacamento, n, neigh, dist, pesos, inercia, nome_serie, log, log_discrete = pp.load_param(name)
+
 nextX = espacamento
 nextY = -espacamento
 
@@ -39,6 +42,8 @@ treeEstudo.add(area_estudo)
 
 pp.pre_process(tree)
 
+print('tree done')
+
 escolas, saude, onibus, lagoa, chico_mendes = pp.load_shp()
 
 dict_cm = pp.create_area(nextX, nextY, yminAmortizado, ymaxAmortizado,\
@@ -48,16 +53,19 @@ espacamento, xmax, xmin, ymax, ymin)
 pp.write_dict(dict_cm, 'teste')
 # print(dict_cm[0])
 
-neigh = 'moore'
-dist = 'manhattan'
-# vizinhança, escola, pontos de onibus, saude, distancia
-pesos = [0.4, 0.3, 0.2, 0.1, 0.9]
-threshold = 0.10
-inercia = 0.65
+# neigh = 'moore'
+# dist = 'manhattan'
+# # vizinhança, escola, pontos de onibus, saude, distancia
+# pesos = [0.4, 0.3, 0.2, 0.1, 0.9]
+# threshold = 0.10
+# inercia = 0.65
 
-serie, dict_cm, tempo, log = sim.simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
-yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia, threshold )
+print('pre process done')
 
+serie, dict_cm, tempo, log, log_discrete = sim.simulacao(neigh, dist, dict_cm, xmaxAmortizado, xminAmortizado, ymaxAmortizado, \
+yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia )
+
+print('end of simulation')
 print(tempo)
 # sink_list = []
 # for key in dict_cm:
@@ -67,15 +75,17 @@ print(tempo)
 
 # print(sink_list)
 
-
+print('creating output')
 
 write_shp.write_ocupacao_por_tempo(serie, 'ocupacao_cm', nextX, nextY)
 
 pp.logging(log, 'log')
+pp.logging(log_discrete, 'log_discrete')
 
+print('plotting')
+plots.plotOccBar(pp.log_processing(log_discrete))
 
-
-
+plots.plot1(pp.log_processing(log), 100, 'Quantidade de células ocupadas por ano', 10, 20)
 
 
 # End

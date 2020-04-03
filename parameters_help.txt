@@ -1,0 +1,9 @@
+espacamento
+amortização
+vizinhança
+distancia
+peso_viz, peso_esc, peso_bus, peso_sau, peso_dist
+inercia
+nome_serie
+nome_log_time
+nome_log_discrete

@@ -88,7 +88,7 @@ yminAmortizado, espacamento, dict_cm, i, j, id_, dist):
 
 
 def simulacao(neigh, dist, dict_temp, xmaxAmortizado, xminAmortizado, \
-ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia, threshold):
+ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, inercia):
     serie_historica = []
     fim = 1
     neigh = neigh
@@ -112,8 +112,10 @@ ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, iner
     print('to: ', space_to_occup)
 
     log = []
+    log_disc = []
     t = 0
     while ((occupied < (space_to_occup-2)) and (t < 100)):
+        occ_now = 0
         for key in dict_temp:
             if (dict_temp[key]['area_parque_cm']):
                 i = dict_temp[key]['i']
@@ -143,9 +145,12 @@ ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, iner
                     if dict_temp[key]['ocupado'] == 0:
                         dict_temp[key]['ocupado'] = 1
                         occupied += 1
+                        occ_now += 1
 
         serie_historica.append(copy.deepcopy(dict_temp))
         log.append(['iteracao: ', t, ', ' 'space occ: ', occupied, '\n'])
+        log_disc.append(['iteracao: ', t, ', ' 'space occ now: ', occ_now, '\n'])
+
 
         t+=1
         print('iteracao: ', t, 'space occ: ', occupied)
@@ -153,7 +158,7 @@ ymaxAmortizado, yminAmortizado, espacamento, escolas, saude, onibus, pesos, iner
 
     print('final: ',occupied)
 
-    return serie_historica, dict_temp, t, log
+    return serie_historica, dict_temp, t, log, log_disc
 
 
 
